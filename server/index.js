@@ -1,0 +1,286 @@
+require("dotenv").config()
+const Resume = require("./models/Resume")
+const express = require("express")
+const fs = require("fs")
+const pdfParse = require("pdf-parse")
+const multer = require("multer")
+const cors = require("cors")
+const PDFDocument = require("pdfkit")
+const mongoose = require("mongoose")
+mongoose.connect(
+  process.env.MONGO_URI
+)
+.then(() =>
+  console.log("MongoDB Connected")
+)
+.catch((err) =>
+  console.log(err)
+)
+
+const { GoogleGenerativeAI } = require("@google/generative-ai")
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+)
+
+const app = express()
+let latestAnalysis = {
+  score: 0,
+  matchScore: 0,
+  skills: [],
+  missingSkills: [],
+}
+const upload = multer({
+  dest: "uploads/",
+})
+
+app.use(cors())
+app.use(express.json())
+
+app.get("/", (req, res) => {
+  res.send("Server Running")
+})
+
+app.post("/upload", upload.single("resume"), async (req, res) => {
+  try {
+    const fs = require("fs")
+    const pdfParse = require("pdf-parse")
+
+    const dataBuffer = fs.readFileSync(req.file.path)
+const pdfData = await pdfParse(dataBuffer)
+
+const text = pdfData.text
+const jobDescription =
+  req.body.jobDescription || ""
+
+    const skills = [
+      "JavaScript",
+      "React",
+      "Node",
+      "MongoDB",
+      "Python",
+      "SQL",
+      "HTML",
+      "CSS",
+    ]
+
+    const foundSkills = skills.filter((skill) =>
+      text.toLowerCase().includes(skill.toLowerCase())
+    )
+    const jdSkills = skills.filter((skill) =>
+  jobDescription
+    .toLowerCase()
+    .includes(skill.toLowerCase())
+)
+
+const missingSkills = jdSkills.filter(
+  (skill) =>
+    !text
+      .toLowerCase()
+      .includes(skill.toLowerCase())
+)
+    const resumeWords =
+  text.toLowerCase().split(" ")
+
+const jdWords =
+  jobDescription.toLowerCase().split(" ")
+
+const matchedWords = jdWords.filter((word) =>
+  resumeWords.includes(word)
+)
+
+const matchScore = Math.min(
+  Math.round(
+    (matchedWords.length / jdWords.length) *
+      100
+  ),
+  100
+)
+
+    let score = 0
+
+    if (foundSkills.length >= 5) score += 40
+
+    if (text.includes("Projects")) score += 20
+
+    if (text.includes("Education")) score += 20
+
+    if (text.length > 1000) score += 20
+    const model = genAI.getGenerativeModel({
+  model: "gemini-2.0-flash",
+})
+
+const prompt = `
+Analyze this resume.
+
+Job Description:
+${jobDescription}
+
+Resume:
+${text}
+
+Give:
+1. Resume improvement suggestions
+2. Missing skills
+3. ATS improvement tips
+4. Project improvement ideas
+`
+
+let suggestions = []
+
+if (!text.includes("Projects")) {
+  suggestions.push(
+    "Add a Projects section to improve your resume."
+  )
+}
+
+if (!text.includes("Education")) {
+  suggestions.push(
+    "Add Education details clearly."
+  )
+}
+
+if (!text.includes("GitHub")) {
+  suggestions.push(
+    "Add your GitHub profile link."
+  )
+}
+
+if (!text.includes("LinkedIn")) {
+  suggestions.push(
+    "Add your LinkedIn profile."
+  )
+}
+
+if (foundSkills.length < 5) {
+  suggestions.push(
+    "Add more technical skills relevant to the job."
+  )
+}
+
+if (text.length < 1000) {
+  suggestions.push(
+    "Your resume content is too short. Add more details."
+  )
+}
+
+if (missingSkills.length > 0) {
+  suggestions.push(
+    `Missing Skills: ${missingSkills.join(", ")}`
+  )
+}
+
+if (suggestions.length === 0) {
+  suggestions.push(
+    "Your resume looks strong and ATS-friendly."
+  )
+}
+
+const aiResponse =
+  suggestions.join("\n\n")
+try {
+  await Resume.create({
+    extractedText: text || "",
+
+    skills: foundSkills || [],
+
+    missingSkills:
+      missingSkills || [],
+
+    atsScore: score || 0,
+
+    matchScore:
+      matchScore || 0,
+
+    aiSuggestions:
+      aiResponse || "",
+  })
+
+  console.log(
+    "Resume saved to MongoDB"
+  )
+} catch (dbError) {
+  console.log(
+    "Mongo Save Error:"
+  )
+
+  console.log(dbError.message)
+}
+latestAnalysis = {
+  score,
+  matchScore,
+  skills: foundSkills,
+  missingSkills,
+}
+
+    res.json({
+      extractedText: text,
+      skills: foundSkills,
+      atsScore: score,
+      matchScore,
+      missingSkills,
+      aiSuggestions: aiResponse
+     
+    })
+  } catch (error) {
+    console.log("UPLOAD ERROR:")
+console.log(error.message)
+
+    res.status(500).json({
+      message: "Error reading PDF",
+    })
+  }
+})
+app.get("/download-report", (req, res) => {
+  const doc = new PDFDocument()
+
+  res.setHeader(
+    "Content-Type",
+    "application/pdf"
+  )
+
+  res.setHeader(
+    "Content-Disposition",
+    "attachment; filename=report.pdf"
+  )
+
+  doc.pipe(res)
+
+  doc
+    .fontSize(22)
+    .text("AI Resume Analysis Report")
+
+  doc.moveDown()
+
+  doc.fontSize(16).text(
+    `ATS Score: ${latestAnalysis.score}%`
+  )
+
+  doc.moveDown()
+
+  doc.fontSize(16).text(
+    `Match Score: ${latestAnalysis.matchScore}%`
+  )
+
+  doc.moveDown()
+
+  doc.text(
+    `Skills: ${latestAnalysis.skills.join(", ")}`
+  )
+
+  doc.moveDown()
+
+  doc.text(
+    `Missing Skills: ${latestAnalysis.missingSkills.join(", ")}`
+  )
+
+  doc.moveDown()
+
+  doc.text(
+    "Generated by AI Resume Analyzer"
+  )
+
+  doc.end()
+})
+app.listen(5000, () => {
+  console.log("Server running on port 5000")
+})
