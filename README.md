@@ -1,27 +1,27 @@
-# 🤖 AI Resume Analyzer
+# AI Resume Analyzer
 
 An intelligent full-stack AI-powered Resume Analyzer that evaluates resumes, extracts skills, calculates ATS score, and provides job matching with improvement suggestions.
 
 ---
 
-## 🚀 Features
+##  Features
 
-- 📄 Upload Resume (PDF)
-- 🧠 PDF Text Extraction
-- 📊 ATS Score Analysis
-- 🔍 Job Description Matching
-- ⚠️ Missing Skills Detection
-- 💡 Rule-Based AI Suggestions
-- 🌙 Dark Mode UI
-- 📈 Charts & Analytics Dashboard
-- 🔐 Firebase Authentication
-- 📥 Downloadable PDF Report
-- 🗄️ MongoDB Database Storage
-- ⚡ Full-stack React + Node.js application
+-  Upload Resume (PDF)
+-  PDF Text Extraction
+-  ATS Score Analysis
+-  Job Description Matching
+-  Missing Skills Detection
+-  Rule-Based AI Suggestions
+-  Dark Mode UI
+-  Charts & Analytics Dashboard
+-  Firebase Authentication
+-  Downloadable PDF Report
+-  MongoDB Database Storage
+-  Full-stack React + Node.js application
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 - Frontend: React.js, HTML, CSS, JavaScript
 - Backend: Node.js, Express.js
@@ -33,7 +33,7 @@ An intelligent full-stack AI-powered Resume Analyzer that evaluates resumes, ext
 
 ---
 
-## ⚙️ How It Works
+##  How It Works
 
 1. User registers / logs in using Firebase Authentication  
 2. User uploads Resume (PDF file)  
@@ -47,7 +47,7 @@ An intelligent full-stack AI-powered Resume Analyzer that evaluates resumes, ext
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 AI Resume Analyzer
 │
 ├── frontend (React)
@@ -65,7 +65,17 @@ AI Resume Analyzer
 │
 ├── database (MongoDB Atlas)
 └── README.md
-## ⚙️ Installation & Setup   
+## Screenshots
+
+### Home Page
+![Home](Screenshots/home.png.png)
+
+### Dashboard
+![Dashboard](Screenshots/dashboard.png.png)
+
+### ATS Score
+![ATS Score](Screenshots/ats-score.png.png)
+## Installation & Setup   
 
 ### 1. Backend Setup
 npm install
@@ -75,7 +85,13 @@ npm start
 npm install
 npm start
 
-👩‍💻 Author
+Live Demo
+Frontend:
+https://ai-resume-analyzer-amber-eight.vercel.app
+
+Backend:
+https://ai-resume-analyzer-j1jb.onrender.com
+ Author
 Name: Pratibha kumari
 GitHub: https://github.com/pratibha740
 Project: AI Resume Analyzer
