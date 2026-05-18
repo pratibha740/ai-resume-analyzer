@@ -145,7 +145,7 @@ function App() {
       )
 
       const response = await axios.post(
-        "http://localhost:5000/upload",
+        "https://ai-resume-analyzer-j1jb.onrender.com/upload",
         formData
       )
 
@@ -516,7 +516,7 @@ function App() {
             <button
               onClick={() =>
                 window.open(
-                  "http://localhost:5000/download-report"
+                  "https://ai-resume-analyzer-j1jb.onrender.com/download-report"
                 )
               }
               className="bg-green-600 hover:bg-green-700 transition text-white px-4 py-3 rounded-lg w-full mt-6"
